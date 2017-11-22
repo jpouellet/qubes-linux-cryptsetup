@@ -1,5 +1,10 @@
 %{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
 
+%if 0%{?qubes_builder}
+%define _sourcedir %(pwd)
+%define _builddir %(pwd)
+%endif
+
 Summary: A utility for setting up encrypted disks
 Name: cryptsetup
 Version: 1.7.5
@@ -17,7 +22,9 @@ Requires: cryptsetup-libs = %{version}-%{release}
 Requires: libpwquality >= 1.2.0
 
 %global upstream_version %{version}
-Source0: https://www.kernel.org/pub/linux/utils/cryptsetup/v1.7/cryptsetup-%{upstream_version}.tar.xz
+#Source0: https://www.kernel.org/pub/linux/utils/cryptsetup/v1.7/cryptsetup-%{upstream_version}.tar.xz
+Source0: cryptsetup-%{version}.tar
+Patch0: cryptsetup_%{version}+nuke_keys.diff
 
 %description
 The cryptsetup package contains a utility for setting up
@@ -88,6 +95,7 @@ for setting up disk encryption using dm-crypt kernel module.
 
 %prep
 %setup -q -n cryptsetup-%{upstream_version}
+%patch0 -p1
 chmod -x python/pycryptsetup-test.py
 chmod -x misc/dracut_90reencrypt/*
 
