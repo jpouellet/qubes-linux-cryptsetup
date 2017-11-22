@@ -29,27 +29,21 @@ UNTRUSTED_SUFF := .UNTRUSTED
 FETCH_CMD := wget --no-use-server-timestamps -q -O
 
 ALL_URLS := $(addsuffix .xz,$(KORG_TARS)) $(addsuffix .sign,$(KORG_TARS))
-ALL_FILES := $(addprefix dl/,$(notdir $(KORG_TARS) $(ALL_URLS)))
+ALL_FILES := $(notdir $(KORG_TARS) $(ALL_URLS))
 
-# order-only prerequisite
-$(ALL_FILES): | dl
-
-dl:
-	mkdir -p dl
-
-dl/%.sign:
+%.sign:
 	$(FETCH_CMD) $@ $(filter %.sign,$(ALL_URLS))
 
 keys/%.gpg: $$(sort $$(wildcard keys/$$*/*.asc))
 	cat $^ | gpg --dearmor >$@
 
-dl/%: tofu/%.sha512
+%: tofu/%.sha512
 	$(FETCH_CMD) $@$(UNTRUSTED_SUFF) $(filter %/$*,$(ALL_URLS))
 	sha512sum --status -c <(printf "$$(cat $<)  -\n") <$@$(UNTRUSTED_SUFF) || \
 		{ echo "Wrong SHA512 checksum on $@$(UNTRUSTED_SUFF)!"; exit 1; }
 	mv $@$(UNTRUSTED_SUFF) $@
 
-dl/%: dl/%.xz dl/%.sign keys/$$(firstword $$(subst -, ,$$*)).gpg
+%: %.xz %.sign keys/$$(firstword $$(subst -, ,$$*)).gpg
 	xzcat <$< >$@$(UNTRUSTED_SUFF)
 	gpgv --keyring $(word 3,$^) $(word 2,$^) $@$(UNTRUSTED_SUFF) 2>/dev/null || \
 		{ echo "Wrong signature on $@$(UNTRUSTED_SUFF)!"; exit 1; }
@@ -62,4 +56,4 @@ verify-sources:
 clean:
 
 clean-sources:
-	rm -rf dl
+	rm -rf $(ALL_FILES)
