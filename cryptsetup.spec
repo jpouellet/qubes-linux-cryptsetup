@@ -24,7 +24,7 @@ Requires: libpwquality >= 1.2.0
 %global upstream_version %{version}
 #Source0: https://www.kernel.org/pub/linux/utils/cryptsetup/v1.7/cryptsetup-%{upstream_version}.tar.xz
 Source0: cryptsetup-%{version}.tar
-Patch0: cryptsetup_%{version}+nuke_keys.diff
+Patch0: unofficial_cryptsetup_%{version}+nuke_keys.diff
 
 %description
 The cryptsetup package contains a utility for setting up
